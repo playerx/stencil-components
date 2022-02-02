@@ -21,11 +21,6 @@ export const config: Config = {
       serviceWorker: null, // disable service workers
       copy: [{ src: 'dev.html' }],
     },
-    // angularOutputTarget({
-    //   componentCorePackage: 'component-library',
-    //   directivesProxyFile: './component-library-angular/src/directives/proxies.ts',
-    //   // valueAccessorConfigs: angularValueAccessorBindings,
-    // }),
 
     // angularOutputTarget({
     //   componentCorePackage: '@ionic/core',
