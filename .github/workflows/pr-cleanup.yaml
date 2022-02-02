@@ -1,0 +1,47 @@
+name: PR Cleanup
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  create_release:
+    name: Cleanup Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org
+
+      - uses: jwalton/gh-find-current-pr@v1
+        id: findPr
+        with:
+          state: all
+
+      - name: Unpin from IPFS
+        run: |
+          hash=$(curl https://api.pinata.cloud/data/pinList \
+                  --header "pinata_api_key: ${{ secrets.PINATA_API_KEY }}" \
+                  --header "pinata_secret_api_key: ${{ secrets.PINATA_API_SECRET_KEY }}" \
+                  -G \
+                  -d status=pinned \
+                  -d "metadata[name]=stencil-components-PR-${{ steps.findPr.outputs.pr }}" | jq -r '.rows[0].ipfs_pin_hash')
+
+          curl https://api.pinata.cloud/pinning/unpin/$hash \
+                -X DELETE \
+                --header "pinata_api_key: ${{ secrets.PINATA_API_KEY }}" \
+                --header "pinata_secret_api_key: ${{ secrets.PINATA_API_SECRET_KEY }}"
+
+      - uses: mshick/add-pr-comment@v1
+        with:
+          message: |
+            Deployment unpinned successfully!
+
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token-user-login: 'github-actions[bot]'
+          allow-repeats: true

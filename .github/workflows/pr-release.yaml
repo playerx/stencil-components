@@ -1,0 +1,64 @@
+name: PR Release
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org
+
+      - uses: jwalton/gh-find-current-pr@v1
+        id: findPr
+        with:
+          state: all
+
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: '**/node_modules'
+          key: npm-v2-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: npm-v2-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the IPFS bundle
+        run: npm run build
+
+      - name: Pin to IPFS
+        id: upload
+        uses: anantaramdas/ipfs-pinata-deploy-action@39bbda1ce1fe24c69c6f57861b8038278d53688d
+        with:
+          pin-name: stencil-components-PR-${{ steps.findPr.outputs.pr }}
+          path: './www'
+          pinata-api-key: ${{ secrets.PINATA_API_KEY }}
+          pinata-secret-api-key: ${{ secrets.PINATA_API_SECRET_KEY }}
+
+      - name: Convert CIDv0 to CIDv1
+        id: convert_cidv0
+        uses: uniswap/convert-cidv0-cidv1@v1.0.0
+        with:
+          cidv0: ${{ steps.upload.outputs.hash }}
+
+      - uses: mshick/add-pr-comment@v1
+        with:
+          message: |
+            📦 Deployed at:
+            https://${{ steps.convert_cidv0.outputs.cidv1 }}.ipfs.dweb.link/
+
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token-user-login: 'github-actions[bot]'
+          allow-repeats: true
