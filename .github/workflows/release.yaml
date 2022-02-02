@@ -85,7 +85,10 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Update NPM Package Version
-        run: npm version ${{ needs.bump_version.outputs.new_tag }}
+        run: |
+          git config --global user.email "bot@jok.io"
+          git config --global user.name "Jok Bot"
+          npm version ${{ needs.bump_version.outputs.new_tag }}
 
       - name: Publish NPM Package
         run: npm publish
