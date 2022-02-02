@@ -1,6 +1,6 @@
 {
-  "name": "mycomps",
-  "version": "0.0.1",
+  "name": "ez-mycomps",
+  "version": "0.0.4",
   "description": "Stencil Component Starter",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
@@ -24,7 +24,8 @@
     "start": "stencil build --dev --watch --serve",
     "test": "stencil test --spec --e2e",
     "test.watch": "stencil test --spec --e2e --watchAll",
-    "generate": "stencil generate"
+    "generate": "stencil generate",
+    "prepublish": "npm run build"
   },
   "dependencies": {
     "@stencil/angular-output-target": "^0.4.0",
