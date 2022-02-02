@@ -78,6 +78,18 @@ jobs:
         with:
           cidv0: ${{ steps.upload.outputs.hash }}
 
+      - name: Prepare NPM Token
+        run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
+        shell: bash
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Update NPM Package Version
+        run: npm version ${{ needs.bump_version.outputs.new_tag }}
+
+      - name: Publish NPM Package
+        run: npm publish
+
       # - name: Update DNS with new IPFS hash
       #   env:
       #     CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
